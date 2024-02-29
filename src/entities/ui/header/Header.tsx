@@ -3,7 +3,7 @@ import MenuIcon from '@mui/icons-material/Menu';
 export const Header = () => {
     return (
         <Grid>
-            <AppBar component="nav">
+            <AppBar component="nav" position="static">
                 <Toolbar>
                     <IconButton
                         color="inherit"

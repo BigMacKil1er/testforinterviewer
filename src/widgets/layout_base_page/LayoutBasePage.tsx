@@ -12,11 +12,11 @@ export const LayoutBasePage = () => {
     const ids = useSelector((state:RootState)=> state.ids.result)
     const items = useSelector((state:RootState)=> state.items.result)
     const [page, setPage] = useState(0)
-    const [rowsPerPage, setRowsPerPage] = useState(5);
+    const [rowsPerPage, setRowsPerPage] = useState(50);
     const [getData] = useGetDataMutation()
     const limit = 100
     const ofset = page * limit
-    const handleChangePage = (event: unknown, newPage: number) => {
+    const handleChangePage = (_event: unknown, newPage: number) => {
         setPage(() => newPage);
       };
     function handleChangeRowsPerPage(event: React.ChangeEvent<HTMLInputElement>) {
@@ -180,7 +180,7 @@ export const LayoutBasePage = () => {
                     </Table>
                 </TableContainer>
                 <TablePagination
-                    rowsPerPageOptions={[5, 10, 25]}
+                    rowsPerPageOptions={[50, 100]}
                     component="div"
                     count={items ? items.length : 1}
                     rowsPerPage={rowsPerPage}

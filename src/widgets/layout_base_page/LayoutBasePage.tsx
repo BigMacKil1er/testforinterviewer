@@ -1,12 +1,22 @@
-import { Container, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Typography} from "@mui/material";
+import { Button, Container, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Typography, styled} from "@mui/material";
 import Paper from '@mui/material/Paper';
-import { useEffect, useMemo, useRef, useState } from "react";
-import { useGetDataMutation } from "../../entities/api/some";
+import React, { useEffect, useMemo, useRef, useState } from "react";
+import { getApiAllDataSlice, useGetDataMutation } from "../../entities/api/some";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "../../app/store";
 import { setItems } from "../../app/store/data/items";
 import { itemObj } from "../../app/types";
+import DeleteIcon from '@mui/icons-material/Delete';
 import { useDebounce } from "use-debounce";
+
+const Item = styled(Paper)(({ theme }) => ({
+    backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
+    ...theme.typography.body2,
+    padding: theme.spacing(1),
+    textAlign: 'center',
+    color: theme.palette.text.secondary,
+  }));
+
 export const LayoutBasePage = () => {
     const dispatch = useDispatch()
     const ids = useSelector((state:RootState)=> state.ids.result)
@@ -14,6 +24,15 @@ export const LayoutBasePage = () => {
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(50);
     const [getData] = useGetDataMutation()
+    const {data} = getApiAllDataSlice({
+        "action": "get_ids",
+        params: {offset: 0, limit: 50}
+    })
+    
+    useEffect(()=>{
+        console.log(data);
+    },[data])
+
     const limit = 100
     const ofset = page * limit
     const handleChangePage = (_event: unknown, newPage: number) => {
@@ -32,9 +51,12 @@ export const LayoutBasePage = () => {
 
     console.log('render');
     
+    function dataReset() {
+        dispatch(setItems({result: []}))
+        setDontHaveData(false)
+    }
+
     async function getItems(ids: string[]) {
-        console.log('getItems');
-        
         if (ids && ids.length > 0) {
             try {
                 const response = await getData(
@@ -71,8 +93,7 @@ export const LayoutBasePage = () => {
     }
 
     async function getIds() {
-        console.log('getIds');
-        
+        dataReset()
         try {
             const response = await getData({
                 "action": "get_ids",
@@ -83,13 +104,25 @@ export const LayoutBasePage = () => {
             console.log(error)
         }
     }
+    
+    const [dontHaveData, setDontHaveData] = useState(false)
 
+    useEffect(()=>{
+        console.log('data', dontHaveData);
+    },[dontHaveData])
     async function getProductIds(product: string, selectedField:string) {
+        dataReset()
         try {
             const response = await getData({
                 "action": "filter",
                 "params": {[selectedField]: selectedField === 'price' && product ? parseInt(product) : product}
             }).unwrap()
+            if (response.result.length === 0) {
+                console.log(response.result.length);
+                setDontHaveData(prev => !prev)
+                console.log(dontHaveData);
+                
+            }
             return response
         } catch (error) {
             console.log(error)
@@ -97,12 +130,18 @@ export const LayoutBasePage = () => {
     }
 
     useEffect(()=>{
-        getIds().then(res => {
-            const responseItems = getItems(res.result)
-            return responseItems
-        }).then(res => {
-            res && dispatch(setItems({result: [...items, ...res.result]}))
-        })
+        // getIds().then(res => {
+        //     const responseItems = getItems(res.result)
+        //     return responseItems
+        // }).then(res => {
+        //     res && dispatch(setItems({result: [...items, ...res.result]}))
+        // })
+        // const some = getAllData({
+        //     "action": "get_ids",
+        //     params: {offset: ofset, limit: limit}
+        // })
+        // console.log(some.data);
+        
     },[])
 
 
@@ -126,6 +165,17 @@ export const LayoutBasePage = () => {
         const value = event.target.value
         setInputValue(value)
     }
+
+    function handleDeleteClick() {
+        setInputValue('')
+        setSelectValue('')
+        getIds().then(res => {
+            const responseItems = getItems(res.result)
+            return responseItems
+        }).then(res => {
+            res && dispatch(setItems({result: [...items, ...res.result]}))
+        })
+    }
     return (
         <Grid >
             <Container>
@@ -147,6 +197,7 @@ export const LayoutBasePage = () => {
                                     id="demo-simple-select"
                                     label="Age"
                                     sx={{width: '100%'}}
+                                    value={selectValue}
                                     onChange={handleChange}
                                 >
                                     <MenuItem value=''>Нет</MenuItem>
@@ -154,9 +205,16 @@ export const LayoutBasePage = () => {
                                     <MenuItem value='product'>Название</MenuItem>
                                     <MenuItem value='brand'>Бренд</MenuItem>
                                 </Select>
-                                {selectValue && <TextField inputRef={inputRef} id="standard-basic" label={selectValue} variant="standard" onChange={handleInputChange} />}
+                                {selectValue && <>
+                                    <TextField inputRef={inputRef} id="standard-basic" label={selectValue} variant="standard" onChange={handleInputChange} />
+                                </>}
+                                
+                                
                         </FormControl>
-                            
+                        
+                        {inputValueDebounce && <Button variant="outlined" onClick={handleDeleteClick} startIcon={<DeleteIcon />}>
+                                        {inputValueDebounce}
+                                    </Button>}
                         
                     </Toolbar>
                     <Table sx={{ minWidth: 650 }} aria-label="simple table">
@@ -168,7 +226,39 @@ export const LayoutBasePage = () => {
                             <TableCell align="right">Brand</TableCell>
                         </TableRow>
                     </TableHead>
+
                     <TableBody>
+                        {dontHaveData && 
+                        <TableRow>
+                            <TableCell>
+                                <Stack>
+                                    <Item>No results, repeat the request</Item>
+                                </Stack>
+                            </TableCell>
+                        </TableRow>}
+                 
+                        {limitedItems.length === 0 && !dontHaveData &&
+                        <>
+                            <TableRow>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                                <TableCell><Skeleton sx={{display: 'flex', maxWidth: '100%'}} variant="rounded"  height={20} /></TableCell>
+                            </TableRow>
+                        </>}
+                        
                         {limitedItems?.map(item => 
                         <TableRow key={item.id}>
                             <TableCell>{item.id}</TableCell>

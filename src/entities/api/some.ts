@@ -14,6 +14,5 @@ export const getApiSlice = apiSlice.injectEndpoints({
     })
 })
 
-export const getApiAllDataSlice = apiSlice.useGetAllDataQuery
 
 export const {useGetDataMutation} = getApiSlice

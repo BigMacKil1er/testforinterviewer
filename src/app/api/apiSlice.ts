@@ -1,5 +1,8 @@
 import { createApi, fetchBaseQuery, retry } from '@reduxjs/toolkit/query/react'
 import { TOKEN } from './lib/auth'
+import { itemObj } from '../types'
+import { RootState } from '../store'
+import { setItems } from '../store/data/items'
 
 const BASE_URL = 'http://api.valantis.store:40000/'
 
@@ -11,22 +14,28 @@ type field = 'price' | 'id' | 'brand' | 'product'
 
 type actions = 'get_ids' | 'get_items' | 'get_fields' | 'filter'
 
+type paramsFilter = {
+    [Key in field]: number | string
+}
+
 interface IParamsField {
     field?: field, 
     offset: number, 
     limit: number
 }
+
 interface IParamsIds extends Omit<IParamsField, field> {}
 
-type paramsItems = {
+interface IParamsItems extends Partial<IParamsIds> {
     ids: string[]
 }
 
-type paramsFilter = {
-    [Key in field]: number | string
+interface IParamsFilter extends paramsFilter {
+    offset?: never;
+    limit?: never;
 }
 
-type ParamsByAction<T extends actions> = T extends 'filter' ? paramsFilter : T extends 'get_fields' ? IParamsField : T extends 'get_ids' ? IParamsIds : paramsItems
+type ParamsByAction<T extends actions> = T extends 'filter' ? IParamsFilter : T extends 'get_fields' ? IParamsField : T extends 'get_ids' ? IParamsIds : IParamsItems
 
 interface Credentials<T extends actions> {
     action: T,
@@ -52,86 +61,68 @@ const baseQuery = retry(fetchBaseQuery({
     }
 }), {maxRetries: 5})
 
-
-// export const apiSlice = createApi({ 
-//     reducerPath: 'dataApi',
-//     baseQuery: baseQuery,
-//     endpoints: builder => ({
-//         getData: builder.mutation<IResponseId | IResponseItems, Credentials<actions>>({
-//             query: (credentials) => ({
-//                 url: '',
-//                 method: 'POST',
-//                 body: credentials,
-//             }),
-//         })
-//     }),
-// })
+function deleteDouble(items:itemObj[]) {
+    const map = new Map()
+    for (const item of items) {
+        map.set(item.id, item)
+    }
+    // const uniqueItems = {
+    //     result: Array.from(map.values())
+    // }
+    return Array.from(map.values())
+}
 
 export const apiSlice = createApi({ 
     reducerPath: 'dataApi',
     baseQuery: baseQuery,
     endpoints: builder => ({
-        getData: builder.mutation<IResponseId | IResponseItems, Credentials<actions>>({
+        getDataItemsIds: builder.mutation<IResponseId | IResponseItems, Credentials<actions>>({
             query: (credentials) => ({
                 url: '',
                 method: 'POST',
                 body: credentials,
             })
         }),
-        getAllData: builder.query<IResponseId | IResponseItems, Credentials<actions>>({
-            async queryFn(arg, _queryApi, _extraOptions, fetchWithBQ){
-                const offset = arg.params.offset
-                const limit = arg.params.limit
+        getAllData: builder.mutation<IResponseId | IResponseItems, Credentials<actions>>({
+            async queryFn(arg, queryApi, _extraOptions, fetchWithBQ){
+                const state = queryApi.getState() as RootState
+                const dispatch = queryApi.dispatch
+                
+                const offset = arg.params.offset ? arg.params.offset : 0
+                const limit = arg.params.limit ? arg.params.limit : 50
                 const fullData = []
-                for (let ofset = offset; ofset < 1000; ofset + limit) {
-                    const data = fetchWithBQ({
-                        url: '',
-                        method: 'POST',
-                        body: {...arg, params: {
-                            offset: ofset,
-                            limit: limit
-                        }},
-                    })
-                    if (data) {
-                        console.log(data);
-                        fullData.push(...data.result)
-                    }
-                    return Promise.resolve({result: data.result})
+                const result = await fetchWithBQ({
+                    url: '',
+                    method: 'POST',
+                    body: {...arg, params: {
+                        offset: offset,
+                        limit: limit
+                    }},
+                })
+                const data = result.data as {result: string[]}
+                for (let loopOffset = 0; loopOffset < data.result.length; loopOffset += 100) {
+                        const itemResult = await fetchWithBQ({
+                            url: '',
+                            method: 'POST',
+                            body: 
+                                {
+                                    "action": "get_items",
+                                    "params": {"ids": data.result.slice(loopOffset, loopOffset + 100)}
+                                }
+                        })
+                        if (itemResult.data instanceof Object && 'result' in itemResult.data) {
+                            const data = itemResult.data as { result: itemObj[] };
+                            const filteredResult = deleteDouble(data.result)
+                            dispatch(setItems({result: [...state.items.result, ...fullData]}))
+                            fullData.push(...filteredResult)
+                        }
+                    
                 }
+                dispatch(setItems({result: fullData}))
+                return { data: { result: fullData } }
             }
         }
 
         ) 
     }),
 })
-
-// export const apiSlice = createApi({ 
-//     reducerPath: 'dataApi',
-//     baseQuery: baseQuery,
-//     endpoints: builder => ({
-//         getData: builder.mutation({
-//                         query: (credentials) => ({
-//                             url: '',
-//                             method: 'POST',
-//                             body: credentials,
-//                         }),
-//         getAllData: builder.query<IResponseId | IResponseItems, Credentials<actions>>(
-//             {queryFn: (credentials) => {
-//                 let list = []
-//                 let offset = credentials.params.offset
-//                 let limit = credentials.params.limit
-//                 for (let ofset = 0; ofset < offset; ofset + limit) {
-//                     const {data} = getData.select({
-//                         ...credentials, params: {
-//                             offset: ofset,
-//                             limit: limit
-//                         }
-//                     })
-//                     if (data) {
-                        
-//                     }
-//                 }
-//             }}
-//         ) 
-//     }),
-// })

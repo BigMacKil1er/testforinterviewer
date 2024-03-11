@@ -7,6 +7,7 @@ import { useDispatch } from "react-redux";
 import { useDebounce } from "use-debounce";
 import { IParamsFilter, apiSlice, field } from "../../../app/api/apiSlice";
 import { setItems } from "../../../app/store/data/items";
+import { theme } from "../../../app/styles/theme";
 
 interface ITableControlProps {
     setPage: React.Dispatch<React.SetStateAction<number>>
@@ -82,7 +83,8 @@ export const TableControl:React.FC<ITableControlProps> = ({setPage, setDontHaveD
                         labelId="demo-simple-select-label"
                         id="demo-simple-select"
                         label="Age"
-                        sx={{width: '100%'}}
+                        color="secondary"
+                        sx={{width: '100%', color: theme.palette.primary.contrastText}}
                         value={selectValue}
                         onChange={handleSelectChange}
                     >

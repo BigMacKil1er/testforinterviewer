@@ -1,9 +1,10 @@
 import { AppBar, Box, Grid, IconButton, Link, Toolbar, Typography } from "@mui/material";
 import MenuIcon from '@mui/icons-material/Menu';
+import { theme } from "../../../app/styles/theme";
 export const Header = () => {
     return (
         <Grid>
-            <AppBar component="nav" position="static">
+            <AppBar sx={{backgroundColor: theme.palette.primary.main}} component="nav" position="static">
                 <Toolbar>
                     <IconButton
                         color="inherit"
@@ -19,7 +20,7 @@ export const Header = () => {
                             TEST TASK
                     </Typography>
                     <Box>
-                            <Link sx={{ color: '#fff' }}>
+                            <Link sx={{ color: theme.palette.primary.contrastText }} href='https://github.com/BigMacKil1er/testforinterviewer'>
                                 GitHub
                             </Link>
                     </Box>

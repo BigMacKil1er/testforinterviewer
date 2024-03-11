@@ -14,7 +14,7 @@ export const LayoutBasePage = () => {
         )
     },[])
     return (
-        <Grid >
+        <Grid sx={{overflowY: 'auto'}}>
             <Container>
                 <TableMain />
             </Container>

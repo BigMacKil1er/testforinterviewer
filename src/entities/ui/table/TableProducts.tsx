@@ -2,6 +2,7 @@ import { Stack, Table, TableBody, TableCell,TableHead, TableRow } from "@mui/mat
 import { SkeletonItem, TableItem } from "../../../features/ui";
 import { Item } from "../../../shared/ui/Item";
 import { itemObj } from "../../../app/types";
+import { theme } from "../../../app/styles/theme";
 
 interface ITableProps {
     limitedItems: itemObj[]
@@ -9,15 +10,15 @@ interface ITableProps {
 }
 
 export const TableProducts:React.FC<ITableProps> = ({ dontHaveData, limitedItems}) => {
-
+    const colorText = {color: theme.palette.primary.contrastText }
     return (
-        <Table sx={{ minWidth: 650 }} aria-label="simple table">
+        <Table sx={{ minWidth: 650}} aria-label="simple table" >
             <TableHead>
                 <TableRow>
-                    <TableCell>ID</TableCell>
-                    <TableCell align="right">Name</TableCell>
-                    <TableCell align="right">Price</TableCell>
-                    <TableCell align="right">Brand</TableCell>
+                    <TableCell sx={colorText}>ID</TableCell>
+                    <TableCell sx={colorText} align="right">Name</TableCell>
+                    <TableCell sx={colorText} align="right">Price</TableCell>
+                    <TableCell sx={colorText} align="right">Brand</TableCell>
                 </TableRow>
             </TableHead>
 
@@ -26,7 +27,7 @@ export const TableProducts:React.FC<ITableProps> = ({ dontHaveData, limitedItems
                 <TableRow>
                     <TableCell>
                         <Stack>
-                            <Item>No results, repeat the request</Item>
+                            <Item sx={colorText}>No results, repeat the request</Item>
                         </Stack>
                     </TableCell>
                 </TableRow>}

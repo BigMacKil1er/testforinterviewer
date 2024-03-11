@@ -4,6 +4,7 @@ import { TableControl } from "./TableControl";
 import { useSelector } from "react-redux";
 import { RootState } from "../../../app/store";
 import { useMemo, useState } from "react";
+import { theme } from "../../../app/styles/theme";
 
 export const TableMain = () => {
     const items = useSelector((state:RootState)=> state.items.result)
@@ -26,11 +27,15 @@ export const TableMain = () => {
     }
     return (
         <>
-            <TableControl setPage={setPage} setDontHaveData={setDontHaveData}/>
-            <TableContainer component={Paper}>
+            <TableContainer component={Paper} sx={{backgroundColor: theme.palette.primary.light, color: theme.palette.primary.contrastText}}>
+                <TableControl setPage={setPage} setDontHaveData={setDontHaveData}/>
                 <TableProducts limitedItems={limitedItems} dontHaveData={dontHaveData}/>
             </TableContainer>
             <TablePagination
+                    color="secondary"
+                    sx={{color: theme.palette.primary.light, '& .MuiTablePagination-selectIcon': {
+                        color: theme.palette.primary.light
+                    }}}
                     rowsPerPageOptions={[50, 100]}
                     component="div"
                     count={items ? items.length : 1}

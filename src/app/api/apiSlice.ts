@@ -6,7 +6,7 @@ import { setItems } from '../store/data/items'
 import { deleteDouble } from '../../shared/lib/deleteDouble'
 import { setQueryStatus } from '../store/data/queryStatus'
 
-const BASE_URL = 'http://api.valantis.store:40000/'
+const BASE_URL = 'https://api.valantis.store:41000/'
 
 interface IResponseId {
     result: string[]

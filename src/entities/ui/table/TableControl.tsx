@@ -37,6 +37,7 @@ export const TableControl:React.FC<ITableControlProps> = ({setPage, setDontHaveD
         dispatch(setItems({result: []}))
         setInputValue('')
         setSelectValue('')
+        setDontHaveData(false)
         try {
             await getItemsMulti({
             "action": "get_ids",
@@ -59,7 +60,8 @@ export const TableControl:React.FC<ITableControlProps> = ({setPage, setDontHaveD
             const response = await getItems({
                 "action": "filter",
                 "params": { [selectedField]: selectedField === 'price' && product ? parseInt(product) : product } as unknown as IParamsFilter
-            })
+            }).unwrap()
+            response.result.length === 0 && setDontHaveData(true)
             return response
         } catch (error) {
             console.log(error)

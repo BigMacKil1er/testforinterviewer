@@ -79,8 +79,6 @@ export const apiSlice = createApi({
                 let filteredResult = []
                 const dispatch = queryApi.dispatch
                 dispatch(setQueryStatus(true))
-                console.log('start');
-                
                 const resultIds = await fetchWithBQ({
                     url: '',
                     method: 'POST',
@@ -128,7 +126,6 @@ export const apiSlice = createApi({
                 
                 const data = result.data as {result: string[]}
                 for (let loopOffset = 0; loopOffset < data.result.length; loopOffset += 100) {
-                    console.log(state.queryStatus.isGetItemsInProgress);
                     const stateinner = queryApi.getState() as RootState
                     if (stateinner.queryStatus.isGetItemsInProgress) {
                         fullData = []

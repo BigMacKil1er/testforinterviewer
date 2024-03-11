@@ -3,6 +3,7 @@ import { TOKEN } from './lib/auth'
 import { itemObj } from '../types'
 import { RootState } from '../store'
 import { setItems } from '../store/data/items'
+import { deleteDouble } from '../../shared/lib/deleteDouble'
 
 const BASE_URL = 'http://api.valantis.store:40000/'
 
@@ -10,9 +11,9 @@ interface IResponseId {
     result: string[]
 }
 
-type field = 'price' | 'id' | 'brand' | 'product'
+export type field = 'price' | 'id' | 'brand' | 'product'
 
-type actions = 'get_ids' | 'get_items' | 'get_fields' | 'filter'
+export type actions = 'get_ids' | 'get_items' | 'get_fields' | 'filter'
 
 type paramsFilter = {
     [Key in field]: number | string
@@ -30,14 +31,14 @@ interface IParamsItems extends Partial<IParamsIds> {
     ids: string[]
 }
 
-interface IParamsFilter extends paramsFilter {
+export interface IParamsFilter extends paramsFilter {
     offset?: never;
     limit?: never;
 }
 
-type ParamsByAction<T extends actions> = T extends 'filter' ? IParamsFilter : T extends 'get_fields' ? IParamsField : T extends 'get_ids' ? IParamsIds : IParamsItems
+export type ParamsByAction<T extends actions> = T extends 'filter' ? IParamsFilter : T extends 'get_fields' ? IParamsField : T extends 'get_ids' ? IParamsIds : IParamsItems
 
-interface Credentials<T extends actions> {
+export interface Credentials<T extends actions> {
     action: T,
     params: ParamsByAction<T>
 }
@@ -61,17 +62,6 @@ const baseQuery = retry(fetchBaseQuery({
     }
 }), {maxRetries: 5})
 
-function deleteDouble(items:itemObj[]) {
-    const map = new Map()
-    for (const item of items) {
-        map.set(item.id, item)
-    }
-    // const uniqueItems = {
-    //     result: Array.from(map.values())
-    // }
-    return Array.from(map.values())
-}
-
 export const apiSlice = createApi({ 
     reducerPath: 'dataApi',
     baseQuery: baseQuery,
@@ -82,6 +72,33 @@ export const apiSlice = createApi({
                 method: 'POST',
                 body: credentials,
             })
+        }),        
+        getItems: builder.mutation<IResponseId | IResponseItems, Credentials<actions>>({
+            async queryFn(arg, queryApi, _extraOptions, fetchWithBQ) {
+                let filteredResult = []
+                const dispatch = queryApi.dispatch
+                const resultIds = await fetchWithBQ({
+                    url: '',
+                    method: 'POST',
+                    body: {
+                        ...arg
+                    }
+                })
+                const dataIds = resultIds.data as {result: string[]}
+                if (resultIds.data) {
+                    const resultItems = await fetchWithBQ({
+                        url: '',
+                        method: 'POST',
+                        body: {
+                        action: "get_items",
+                        params: {"ids": dataIds.result}
+                    }})
+                    const dataItems = resultItems.data as { result: itemObj[] };
+                    filteredResult = deleteDouble(dataItems.result)
+                    dispatch(setItems({result: filteredResult}))
+                }
+                return { data: { result: filteredResult } }
+            }
         }),
         getAllData: builder.mutation<IResponseId | IResponseItems, Credentials<actions>>({
             async queryFn(arg, queryApi, _extraOptions, fetchWithBQ){

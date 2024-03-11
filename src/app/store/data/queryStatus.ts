@@ -14,8 +14,6 @@ const queryStatusSlice = createSlice({
     reducers: {
         setQueryStatus: (state, action)=>{
             const result = action.payload
-            console.log(result);
-            
             state.isGetItemsInProgress = result
         }
     },

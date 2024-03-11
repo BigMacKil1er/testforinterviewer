@@ -21,7 +21,7 @@ export const LayoutBasePage = () => {
         doQuery()
     },[])
     return (
-        <Grid sx={{overflowY: 'auto'}}>
+        <Grid sx={{overflowY: 'auto', paddingBottom: '50px'}}>
             <Container>
                 <TableMain />
             </Container>

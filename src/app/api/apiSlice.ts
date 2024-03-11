@@ -151,7 +151,9 @@ export const apiSlice = createApi({
                         }
                     
                 }
-                dispatch(setItems({result: fullData}))
+                if (fullData.length > 0) {
+                    dispatch(setItems({result: fullData}))
+                }
                 setTimeout(()=>{
                     dispatch(setQueryStatus(false))
                 },1000)

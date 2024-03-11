@@ -1,4 +1,4 @@
-import { Button, Container, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Typography, styled} from "@mui/material";
+import { Button, CircularProgress, Container, FormControl, Grid, InputLabel, MenuItem, Select, SelectChangeEvent, Skeleton, Stack, Table, TableBody, TableCell, TableContainer, TableHead, TablePagination, TableRow, TextField, Toolbar, Typography, styled} from "@mui/material";
 import Paper from '@mui/material/Paper';
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { getApiAllDataSlice, useGetDataMutation } from "../../entities/api/some";
@@ -8,6 +8,7 @@ import { setItems } from "../../app/store/data/items";
 import { itemObj } from "../../app/types";
 import DeleteIcon from '@mui/icons-material/Delete';
 import { useDebounce } from "use-debounce";
+import { apiSlice } from "../../app/api/apiSlice";
 
 const Item = styled(Paper)(({ theme }) => ({
     backgroundColor: theme.palette.mode === 'dark' ? '#1A2027' : '#fff',
@@ -24,15 +25,7 @@ export const LayoutBasePage = () => {
     const [page, setPage] = useState(0)
     const [rowsPerPage, setRowsPerPage] = useState(50);
     const [getData] = useGetDataMutation()
-    const {data} = getApiAllDataSlice({
-        "action": "get_ids",
-        params: {offset: 0, limit: 50}
-    })
-    
-    useEffect(()=>{
-        console.log(data);
-    },[data])
-
+    const [getItemsFunc, {isLoading}] = apiSlice.useGetAllDataMutation()
     const limit = 100
     const ofset = page * limit
     const handleChangePage = (_event: unknown, newPage: number) => {
@@ -141,7 +134,12 @@ export const LayoutBasePage = () => {
         //     params: {offset: ofset, limit: limit}
         // })
         // console.log(some.data);
-        
+        getItemsFunc(
+            {
+            "action": "get_ids",
+            params: {offset: 0, limit: 1000}
+            }
+        )
     },[])
 
 
@@ -169,12 +167,11 @@ export const LayoutBasePage = () => {
     function handleDeleteClick() {
         setInputValue('')
         setSelectValue('')
-        getIds().then(res => {
-            const responseItems = getItems(res.result)
-            return responseItems
-        }).then(res => {
-            res && dispatch(setItems({result: [...items, ...res.result]}))
-        })
+        getItemsFunc({
+            "action": "get_ids",
+            params: {offset: 0, limit: 1000}
+            })
+        dispatch(setItems({result: []}))
     }
     return (
         <Grid >

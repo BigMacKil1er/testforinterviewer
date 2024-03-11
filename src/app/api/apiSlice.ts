@@ -4,6 +4,7 @@ import { itemObj } from '../types'
 import { RootState } from '../store'
 import { setItems } from '../store/data/items'
 import { deleteDouble } from '../../shared/lib/deleteDouble'
+import { setQueryStatus } from '../store/data/queryStatus'
 
 const BASE_URL = 'http://api.valantis.store:40000/'
 
@@ -77,6 +78,9 @@ export const apiSlice = createApi({
             async queryFn(arg, queryApi, _extraOptions, fetchWithBQ) {
                 let filteredResult = []
                 const dispatch = queryApi.dispatch
+                dispatch(setQueryStatus(true))
+                console.log('start');
+                
                 const resultIds = await fetchWithBQ({
                     url: '',
                     method: 'POST',
@@ -107,7 +111,12 @@ export const apiSlice = createApi({
                 
                 const offset = arg.params.offset ? arg.params.offset : 0
                 const limit = arg.params.limit ? arg.params.limit : 50
-                const fullData = []
+                let fullData:itemObj[] = []
+                
+                if (state.queryStatus.isGetItemsInProgress) {
+                    fullData = []
+                    return { data: { result: fullData } }
+                }
                 const result = await fetchWithBQ({
                     url: '',
                     method: 'POST',
@@ -116,8 +125,15 @@ export const apiSlice = createApi({
                         limit: limit
                     }},
                 })
+                
                 const data = result.data as {result: string[]}
                 for (let loopOffset = 0; loopOffset < data.result.length; loopOffset += 100) {
+                    console.log(state.queryStatus.isGetItemsInProgress);
+                    const stateinner = queryApi.getState() as RootState
+                    if (stateinner.queryStatus.isGetItemsInProgress) {
+                        fullData = []
+                        break
+                    }
                         const itemResult = await fetchWithBQ({
                             url: '',
                             method: 'POST',
@@ -136,6 +152,9 @@ export const apiSlice = createApi({
                     
                 }
                 dispatch(setItems({result: fullData}))
+                setTimeout(()=>{
+                    dispatch(setQueryStatus(false))
+                },1000)
                 return { data: { result: fullData } }
             }
         }

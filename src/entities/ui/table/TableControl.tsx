@@ -33,14 +33,18 @@ export const TableControl:React.FC<ITableControlProps> = ({setPage, setDontHaveD
         setInputValue(value)
     }
 
-    function handleDeleteClick() {
+    async function handleDeleteClick() {
         dispatch(setItems({result: []}))
         setInputValue('')
         setSelectValue('')
-        getItemsMulti({
+        try {
+            await getItemsMulti({
             "action": "get_ids",
             params: {offset: 0, limit: 1000}
             })
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     function dataReset() {

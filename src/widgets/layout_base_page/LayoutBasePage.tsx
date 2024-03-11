@@ -5,13 +5,20 @@ import { apiSlice } from "../../app/api/apiSlice";
 
 export const LayoutBasePage = () => {
     const [getItemsFunc] = apiSlice.useGetAllDataMutation()
+    async function doQuery(){
+        try {
+            await getItemsFunc(
+                {
+                "action": "get_ids",
+                params: {offset: 0, limit: 1000}
+                }
+            )
+        } catch (error) {
+            console.log(error);
+        }
+    }
     useEffect(()=>{
-        getItemsFunc(
-            {
-            "action": "get_ids",
-            params: {offset: 0, limit: 1000}
-            }
-        )
+        doQuery()
     },[])
     return (
         <Grid sx={{overflowY: 'auto'}}>

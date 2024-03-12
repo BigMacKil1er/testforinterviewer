@@ -12,7 +12,7 @@ interface ITableProps {
 export const TableProducts:React.FC<ITableProps> = ({ dontHaveData, limitedItems}) => {
     const colorText = {color: theme.palette.primary.contrastText }
     return (
-        <Table sx={{ minWidth: 650}} aria-label="simple table" >
+        <Table>
             <TableHead>
                 <TableRow>
                     <TableCell sx={colorText}>ID</TableCell>

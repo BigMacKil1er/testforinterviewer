@@ -75,7 +75,7 @@ export const TableControl:React.FC<ITableControlProps> = ({setPage, setDontHaveD
     },[inputValueDebounce])
     
     return (
-        <Toolbar>
+        <Toolbar sx={{flexDirection: { xs: 'column', sm: 'row' }}}>
             <Typography
                 sx={{ flex: '1 1 100%' }}
                 color="inherit"

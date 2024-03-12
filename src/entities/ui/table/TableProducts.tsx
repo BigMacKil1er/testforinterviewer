@@ -1,4 +1,4 @@
-import { Stack, Table, TableBody, TableCell,TableHead, TableRow } from "@mui/material";
+import { Table, TableBody, TableCell,TableHead, TableRow } from "@mui/material";
 import { SkeletonItem, TableItem } from "../../../features/ui";
 import { Item } from "../../../shared/ui/Item";
 import { itemObj } from "../../../app/types";
@@ -26,9 +26,7 @@ export const TableProducts:React.FC<ITableProps> = ({ dontHaveData, limitedItems
                 {dontHaveData && 
                 <TableRow>
                     <TableCell>
-                        <Stack>
-                            <Item sx={colorText}>No results, repeat the request</Item>
-                        </Stack>
+                            <Item sx={{color: 'black'}}>No results, repeat the request</Item>
                     </TableCell>
                 </TableRow>}
         

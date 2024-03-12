@@ -33,14 +33,19 @@ export const TableControl:React.FC<ITableControlProps> = ({setPage, setDontHaveD
         setInputValue(value)
     }
 
-    function handleDeleteClick() {
+    async function handleDeleteClick() {
         dispatch(setItems({result: []}))
         setInputValue('')
         setSelectValue('')
-        getItemsMulti({
+        setDontHaveData(false)
+        try {
+            await getItemsMulti({
             "action": "get_ids",
             params: {offset: 0, limit: 1000}
             })
+        } catch (error) {
+            console.log(error);
+        }
     }
 
     function dataReset() {
@@ -55,7 +60,8 @@ export const TableControl:React.FC<ITableControlProps> = ({setPage, setDontHaveD
             const response = await getItems({
                 "action": "filter",
                 "params": { [selectedField]: selectedField === 'price' && product ? parseInt(product) : product } as unknown as IParamsFilter
-            })
+            }).unwrap()
+            response.result.length === 0 && setDontHaveData(true)
             return response
         } catch (error) {
             console.log(error)

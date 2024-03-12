@@ -5,6 +5,7 @@ import { apiSlice } from "../../app/api/apiSlice";
 
 export const LayoutBasePage = () => {
     const [getItemsFunc] = apiSlice.useGetAllDataMutation()
+    
     async function doQuery(){
         try {
             await getItemsFunc(

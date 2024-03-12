@@ -8,6 +8,7 @@ import { useDebounce } from "use-debounce";
 import { IParamsFilter, apiSlice, field } from "../../../app/api/apiSlice";
 import { setItems } from "../../../app/store/data/items";
 import { theme } from "../../../app/styles/theme";
+import { setQueryStatus } from "../../../app/store/data/queryStatus";
 
 interface ITableControlProps {
     setPage: React.Dispatch<React.SetStateAction<number>>
@@ -38,6 +39,7 @@ export const TableControl:React.FC<ITableControlProps> = ({setPage, setDontHaveD
         setInputValue('')
         setSelectValue('')
         setDontHaveData(false)
+        dispatch(setQueryStatus(false))
         try {
             await getItemsMulti({
             "action": "get_ids",
